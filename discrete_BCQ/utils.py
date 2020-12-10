@@ -128,6 +128,29 @@ class AtariBuffer(object):
 			self.state[crt:end] = np.load(f"{save_folder}_state_{end}.npy")
 			crt = end
 			end = min(end + chunk, self.crt_size + 1)
+	
+	def load_sqil(self, save_folder, size=-1):
+		reward_buffer = np.load(f"{save_folder}_reward.npy")
+		size = min(int(size), self.max_size) if size > 0 else self.max_size
+		self.crt_size = min(reward_buffer.shape[0], size)
+		
+		# Adjust crt_size if we're using a custom size
+		size = min(int(size), self.max_size) if size > 0 else self.max_size
+		self.crt_size = min(reward_buffer.shape[0], size)
+
+		self.action[:self.crt_size] = np.load(f"{save_folder}_action.npy")[:self.crt_size]
+		self.reward[:self.crt_size] = 1#reward_buffer[:self.crt_size]
+		self.not_done[:self.crt_size] = np.load(f"{save_folder}_not_done.npy")[:self.crt_size]
+		self.first_timestep[:self.crt_size] = np.load(f"{save_folder}_first_timestep.npy")[:self.crt_size]
+
+		self.ptr, chunk = np.load(f"{save_folder}_replay_info.npy")
+
+		crt = 0
+		end = min(chunk, self.crt_size + 1)
+		while crt < self.crt_size + 1:
+			self.state[crt:end] = np.load(f"{save_folder}_state_{end}.npy")
+			crt = end
+			end = min(end + chunk, self.crt_size + 1)
 
 
 # Generic replay buffer for standard gym tasks
